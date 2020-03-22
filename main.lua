@@ -1,56 +1,54 @@
 love = love
-require "maths"
-require("imgui")
+require "imgui"
 imgui = imgui
-_class = {
-    new = function(self,o)
-        o = o or {}
-        setmetatable(o, self)
-        self.__index = self
-        return o
-    end
-}
+require "objects"
 
-_Boat = _class:new({
-    x=nil,
-    y=nil,
-    angle=nil,
-    imgPath=nil,
-    speed=nil,
-    width=20,
-    height=20,
-    Draw = function(self)
-        love.graphics.push()
-        love.graphics.translate(self.x,self.y)
-        love.graphics.rotate(DegtoRad(self.angle))
-        love.graphics.rectangle("fill",-self.width/2,-self.height/2,20,20)
-        love.graphics.pop()
-    end
-})
-
+masterCannonBallList = {}
 
 function love.load()
-    you = _Boat:new({x=300,y=20,angle=1})
-    love.graphics.setColor(0,1,1,1)
+    you = _Boat:new({pos=_Vec2:new(200,300),angle=1,speed=100,imgPath="Ship.png"})
+    --love.graphics.setColor(0,1,1,1)
 
 end
 
 function love.update(dt)
     imgui.NewFrame()
+    if love.keyboard.isDown("up") then
+        you:MoveForward(dt*you.speed)
+    end
+    if love.keyboard.isDown("right") then
+        you.angle = you.angle + (you.speed * dt)
+    end
+    if love.keyboard.isDown("left") then
+        you.angle = you.angle - (you.speed * dt)
+    end
+
+    for i,v in ipairs(you.cannonBallList) do
+        v:Update(dt)
+    end
 
 end
 
-number = 0
+
 function love.draw()
+    love.graphics.clear(0,0.5,1)
     you:Draw()
+    for i,v in ipairs(you.cannonBallList) do
+        v:Draw()
+    end
     --imgui.SetNextWindowPos(0, 0)
     imgui.SetNextWindowSize(200, love.graphics.getHeight())
     imgui.Begin("Hello")
     
-    you.x = imgui.DragFloat("x",you.x,1.0)
-    you.y = imgui.DragFloat("y",you.y,1.0)
-    you.angle = imgui.SliderFloat("angle",you.angle,0.0,360.0)
-
+    you.x = imgui.DragFloat("x",you.pos.x,1.0)
+    you.y = imgui.DragFloat("y",you.pos.y,1.0)
+    you.angle = imgui.DragFloat("angle",you.angle,2)
+    imgui.Text("CannonBall")
+    _CannonBall.scale = imgui.DragFloat("scale##cannonball",_CannonBall.scale,0.005)
+    _CannonBall.speed = imgui.DragFloat("speed##cannonball",_CannonBall.speed,1)
+    if imgui.Button("Debug") then
+        debug.debug()
+    end
     imgui.End()
 
     imgui.Render()
@@ -61,12 +59,14 @@ function love.textinput(t)
     imgui.TextInput(t)
 end
 
-function love.keypressed(key)
+function love.keypressed(key,scancode,isrepeat)
     imgui.KeyPressed(key)
-    if key == "w" then
-        print("Hello")
+    if key == "z" then
+        you:Fire(false)
     end
-
+    if key == "x" then
+        you:Fire(true)
+    end
 end
 
 function love.keyreleased(key)
