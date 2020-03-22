@@ -3,11 +3,11 @@ require "imgui"
 imgui = imgui
 require "objects"
 
-masterCannonBallList = {}
+boats={}
 
 function love.load()
-    you = _Boat:new({pos=_Vec2:new(200,300),angle=1,speed=100,imgPath="Ship.png"})
-    --love.graphics.setColor(0,1,1,1)
+    you = _Boat:new({pos=_Vec2:new(200,300),angle=1,speed=100})
+    enemy = _Boat:new({pos=_Vec2:new(300,200),angle=0,speed=100})
 
 end
 
@@ -22,30 +22,35 @@ function love.update(dt)
     if love.keyboard.isDown("left") then
         you.angle = you.angle - (you.speed * dt)
     end
-
-    for i,v in ipairs(you.cannonBallList) do
-        v:Update(dt)
+    for bk,bv in pairs(boats)do
+        for k,v in pairs(bv.cannonBallList) do
+            v:Update(dt)
+        end
     end
-
+    world:update(dt)
 end
 
 
 function love.draw()
     love.graphics.clear(0,0.5,1)
-    you:Draw()
-    for i,v in ipairs(you.cannonBallList) do
-        v:Draw()
+    for bk,bv in pairs(boats) do
+        bv:Draw()
+        for k,v in pairs(bv.cannonBallList) do
+            v:Draw()
+        end
     end
+    
     --imgui.SetNextWindowPos(0, 0)
     imgui.SetNextWindowSize(200, love.graphics.getHeight())
     imgui.Begin("Hello")
     
-    you.x = imgui.DragFloat("x",you.pos.x,1.0)
-    you.y = imgui.DragFloat("y",you.pos.y,1.0)
+    you.pos.x = imgui.DragFloat("x",you.pos.x,1.0)
+    you.pos.y = imgui.DragFloat("y",you.pos.y,1.0)
     you.angle = imgui.DragFloat("angle",you.angle,2)
     imgui.Text("CannonBall")
     _CannonBall.scale = imgui.DragFloat("scale##cannonball",_CannonBall.scale,0.005)
     _CannonBall.speed = imgui.DragFloat("speed##cannonball",_CannonBall.speed,1)
+    _CannonBall.killDist = imgui.DragFloat("dist##cannonball",_CannonBall.killDist,1)
     if imgui.Button("Debug") then
         debug.debug()
     end

@@ -1,4 +1,5 @@
 require "maths"
+require "physics"
 _class = {
     new = function(self,o)
         o = o or {}
@@ -14,7 +15,7 @@ _CannonBall = _class:new({
     angle=nil,
     dir=nil, --dir[1],dir[2] - x,y - should be normalized
     pos=nil, --pos[1],pos[2] - x,y
-    img=nil,
+    img=love.graphics.newImage("CannonBall.png"),
     scale=0.185,
     width=nil,
     height=nil,
@@ -23,11 +24,9 @@ _CannonBall = _class:new({
 
     killDist=100, --distance where deleted
     startPos=nil,
-    imgPath="CannonBall.png",
     new = function(self,o)
         o = _class.new(self,o)
         --getmetatable(o)["__gc"] = function(t) print("Hello") end
-        o.img = love.graphics.newImage(o.imgPath)
         o.width = o.img:getWidth()
         o.height = o.img:getHeight()
         o.dir = _Vec2:new(math.cos(math.rad(o.angle)),math.sin(math.rad(o.angle)))
@@ -44,18 +43,11 @@ _CannonBall = _class:new({
         
     end,
     Delete = function(self)
-        for k,v in pairs(masterCannonBallList) do
+        for k,v in pairs(self.parentTable) do
             if v == self then
-                print("Found!")
-                masterCannonBallList[k] = nil
+                self.parentTable[k] = nil
             end
         end
-        print("_")
-        for k,v in pairs(masterCannonBallList) do
-            print(k)
-        end
-        print("_")
-        collectgarbage()
     end,
     Draw = function(self)
         love.graphics.push()
@@ -69,31 +61,28 @@ _CannonBall = _class:new({
 _Boat = _class:new({
     pos=nil,
     angle=nil,
-    imgPath=nil,
-    img=nil,
+    img=love.graphics.newImage("Ship.png"),
     speed=nil,
     width=20,
     height=20,
-
+    phys=nil,
     health=100,
     status="alive", --can be "alive" or "dead"
     cannonBallList=nil,
 
     new = function(self,o)
         o = _class.new(self,o)
-        if o.imgPath  ~= nil then
-           o.img = love.graphics.newImage(o.imgPath)
-            o.width = o.img:getWidth()
-            o.height = o.img:getHeight()
-        end
+        o.width = o.img:getWidth()
+        o.height = o.img:getHeight()
         o.cannonBallList = {}
-        setmetatable(o.cannonBallList,{__mode = "v"})
-       
+        o.phys=_PhysicsObj:new(o.pos,o.width,o.height,false)
+        --setmetatable(o.cannonBallList,{__mode = "vk"})
+        table.insert(boats,o)
         return o
     end,
     Draw = function(self)
         love.graphics.push()
-        love.graphics.translate(self.pos.x,self.pos.y)
+        love.graphics.translate(self.phys.body:getX(),self.phys.body:getY())
         love.graphics.rotate(math.rad(self.angle+90))
         if self.img ~= nil then
             love.graphics.draw(self.img,-self.width/2,-self.height/2)
@@ -106,16 +95,16 @@ _Boat = _class:new({
         local dir = _Vec2:new(math.cos(math.rad(self.angle)),math.sin(math.rad(self.angle)))
         self.pos.x = self.pos.x + dir.x * amount
         self.pos.y = self.pos.y + dir.y * amount
+        self.phys.body:setPosition(self.pos.x,self.pos.y)
+        self.pos.x = self.phys.body:getX()
+        self.pos.y = self.phys.body:getY()
     end,
     --right is bool
     Fire = function(self,right)
-        local tmp = _CannonBall:new({
+        table.insert(self.cannonBallList,_CannonBall:new({
             parentTable=self.cannonBallList,
-            pos = _Vec2:new(self.pos.x,self.pos.y),
+            pos = _Vec2:new(self.phys.body:getX(),self.phys.body:getY()),
             angle=self.angle + (90 * (right and 1 or -1))
-        })
-        table.insert(self.cannonBallList,tmp)
-        table.insert(masterCannonBallList,tmp)
-        tmp = nil --removes cannonball reference from strong reference "tmp"
+        }))
     end
 })
