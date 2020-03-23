@@ -1,6 +1,6 @@
 love = love
-require "imgui"
-imgui = imgui
+--require "imgui"
+--imgui = imgui
 require "objects"
 
 boats={}
@@ -56,7 +56,7 @@ function love.load()
 end
 
 function love.update(dt)
-    imgui.NewFrame()
+    --imgui.NewFrame()
 
     for k,v in pairs(boats) do
         v.phys.body:setLinearVelocity(0,0)
@@ -161,11 +161,11 @@ end
 
 
 function love.textinput(t)
-    imgui.TextInput(t)
+    --imgui.TextInput(t)
 end
 
 function love.keypressed(key,scancode,isrepeat)
-    imgui.KeyPressed(key)
+    --imgui.KeyPressed(key)
     if youTimer > 0.5 then
         if key == "z" then
             you:Fire(false)
@@ -179,21 +179,21 @@ function love.keypressed(key,scancode,isrepeat)
 end
 
 function love.keyreleased(key)
-    imgui.KeyReleased(key)
+    --imgui.KeyReleased(key)
 end
 
 function love.mousemoved(x, y)
-    imgui.MouseMoved(x, y)
+    --imgui.MouseMoved(x, y)
 end
 
 function love.mousepressed(x, y, button)
-    imgui.MousePressed(button)
+    --imgui.MousePressed(button)
 end
 
 function love.mousereleased(x, y, button)
-    imgui.MouseReleased(button)
+    --imgui.MouseReleased(button)
 end
 
 function love.wheelmoved(x, y)
-    imgui.WheelMoved(y)
+    --imgui.WheelMoved(y)
 end
